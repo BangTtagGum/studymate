@@ -8,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
- * 노트 커밋 → 질문 파일 커밋.
+ * 노트 커밋 → 질문 이슈 생성 + 질문 파일 커밋.
+ * 이슈가 멤버와의 대화 창구이고, 파일은 기록(대시보드 데이터)이다.
  */
 @Service
 public class QuestionService {
@@ -28,7 +31,7 @@ public class QuestionService {
         this.questionCount = properties.study().questionCount();
     }
 
-    public void generateFor(String key) {
+    public void generateFor(StudyKey key) {
         String questionPath = paths.questionPath(key);
         if (github.readFile(questionPath).isPresent()) {
             log.info("이미 질문 파일 존재, 건너뜀 key={}", key);
@@ -50,6 +53,12 @@ public class QuestionService {
         }
 
         QuestionDocument doc = QuestionDocument.fromGenerated(key, notePath, note.sha(), generated.questions());
-        github.writeFile(questionPath, doc.render(), "질문 생성 " + key, null);
+        GithubClient.Issue issue = github.createIssue(
+                IssueMarkdown.issueTitle(key),
+                IssueMarkdown.issueBody(doc, questionPath),
+                List.of(IssueMarkdown.LABEL),
+                List.of(key.member()));
+        doc = doc.withIssueNumber(issue.number());
+        github.writeFile(questionPath, doc.render(), "질문 생성 " + key + " (#" + issue.number() + ")", null);
     }
 }

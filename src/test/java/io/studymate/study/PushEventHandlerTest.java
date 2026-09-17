@@ -31,22 +31,22 @@ class PushEventHandlerTest {
     @Test
     void routes_notes_to_question_and_questions_to_review() {
         PushEvent event = push("refs/heads/main", "jylee",
-                commit("study: db", List.of("notes/2026-09-17.md"), List.of("questions/2026-09-16.md")));
+                commit("study: db", List.of("notes/jylee/2026-09-17.md"), List.of("questions/jylee/2026-09-16.md")));
 
         handler.handle(event);
 
-        verify(questionService).generateFor("2026-09-17");
-        verify(reviewService).reviewFor("2026-09-16");
+        verify(questionService).generateFor(new StudyKey("jylee", "2026-09-17"));
+        verify(reviewService).reviewFor(new StudyKey("jylee", "2026-09-16"));
     }
 
     @Test
     void ignores_bot_commits_and_other_branches() {
         handler.handle(push("refs/heads/main", "jylee",
-                commit("[studymate] 질문 생성", List.of("questions/2026-09-17.md"), List.of())));
+                commit("[studymate] 질문 생성", List.of("questions/jylee/2026-09-17.md"), List.of())));
         handler.handle(push("refs/heads/feature", "jylee",
-                commit("study", List.of("notes/2026-09-17.md"), List.of())));
+                commit("study", List.of("notes/jylee/2026-09-17.md"), List.of())));
         handler.handle(push("refs/heads/main", "studymate",
-                commit("study", List.of("notes/2026-09-17.md"), List.of())));
+                commit("study", List.of("notes/jylee/2026-09-17.md"), List.of())));
 
         verifyNoInteractions(questionService, reviewService);
     }
@@ -54,7 +54,8 @@ class PushEventHandlerTest {
     @Test
     void ignores_unrelated_paths() {
         handler.handle(push("refs/heads/main", "jylee",
-                commit("chore", List.of("README.md", "reviews/2026-09-17.md", "notes/sub/x.md"), List.of())));
+                commit("chore", List.of("README.md", "reviews/jylee/2026-09-17.md", "notes/2026-09-17.md",
+                        "notes/a/b/2026-09-17.md", "notes/jylee/2026-09-17.txt"), List.of())));
 
         verifyNoInteractions(questionService, reviewService);
     }

@@ -1,6 +1,7 @@
 package io.studymate.webhook;
 
 import tools.jackson.databind.ObjectMapper;
+import io.studymate.study.IssueCommentHandler;
 import io.studymate.study.PushEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 /**
- * GitHub 웹훅 진입점. 서명 검증 후 push 이벤트만 비동기 처리로 넘기고 즉시 응답한다
+ * GitHub 웹훅 진입점. 서명 검증 후 push·issue_comment 이벤트를 비동기 처리로 넘기고 즉시 응답한다
  * (GitHub 는 10초 안에 응답이 없으면 실패로 기록한다).
  */
 @RestController
@@ -27,13 +28,16 @@ public class GithubWebhookController {
     private final WebhookSignatureVerifier verifier;
     private final ObjectMapper objectMapper;
     private final PushEventHandler pushEventHandler;
+    private final IssueCommentHandler issueCommentHandler;
 
     public GithubWebhookController(WebhookSignatureVerifier verifier,
                                    ObjectMapper objectMapper,
-                                   PushEventHandler pushEventHandler) {
+                                   PushEventHandler pushEventHandler,
+                                   IssueCommentHandler issueCommentHandler) {
         this.verifier = verifier;
         this.objectMapper = objectMapper;
         this.pushEventHandler = pushEventHandler;
+        this.issueCommentHandler = issueCommentHandler;
     }
 
     @PostMapping("/github")
@@ -51,12 +55,14 @@ public class GithubWebhookController {
         if ("ping".equals(event)) {
             return ResponseEntity.ok("pong");
         }
-        if (!"push".equals(event)) {
-            return ResponseEntity.ok("ignored: " + event);
+        switch (event) {
+            case "push" -> pushEventHandler.handleAsync(objectMapper.readValue(body, PushEvent.class), deliveryId);
+            case "issue_comment" -> issueCommentHandler.handleAsync(
+                    objectMapper.readValue(body, IssueCommentEvent.class), deliveryId);
+            default -> {
+                return ResponseEntity.ok("ignored: " + event);
+            }
         }
-
-        PushEvent pushEvent = objectMapper.readValue(body, PushEvent.class);
-        pushEventHandler.handleAsync(pushEvent, deliveryId);
         return ResponseEntity.accepted().body("accepted");
     }
 }

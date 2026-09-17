@@ -12,7 +12,7 @@ import java.util.Set;
 
 /**
  * push 이벤트를 받아 변경 파일 경로로 분기한다.
- * notes/*.md → 질문 생성, questions/*.md → 채점. 그 외는 무시.
+ * notes/&lt;member&gt;/*.md → 질문 생성, questions/&lt;member&gt;/*.md → 채점. 그 외는 무시.
  */
 @Component
 public class PushEventHandler {
@@ -53,8 +53,8 @@ public class PushEventHandler {
             return;
         }
 
-        Set<String> noteKeys = new LinkedHashSet<>();
-        Set<String> questionKeys = new LinkedHashSet<>();
+        Set<StudyKey> noteKeys = new LinkedHashSet<>();
+        Set<StudyKey> questionKeys = new LinkedHashSet<>();
         for (String path : event.changedPathsFromHumans()) {
             paths.noteKey(path).ifPresent(noteKeys::add);
             paths.questionKey(path).ifPresent(questionKeys::add);

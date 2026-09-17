@@ -8,12 +8,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 파일 경로 ↔ 날짜 키 변환. notes/2026-09-17.md 의 키는 "2026-09-17".
+ * 파일 경로 ↔ {@link StudyKey} 변환. notes/jylee/2026-09-17.md 의 키는 "jylee/2026-09-17".
  */
 @Component
 public class StudyPaths {
 
-    private static final Pattern MD = Pattern.compile("^([^/]+)/([^/]+)\\.md$");
+    private static final Pattern MD = Pattern.compile("^([^/]+)/([^/]+)/([^/]+)\\.md$");
 
     private final StudyMateProperties.Study study;
 
@@ -21,29 +21,29 @@ public class StudyPaths {
         this.study = properties.study();
     }
 
-    public Optional<String> noteKey(String path) {
+    public Optional<StudyKey> noteKey(String path) {
         return keyIfIn(path, study.notesDir());
     }
 
-    public Optional<String> questionKey(String path) {
+    public Optional<StudyKey> questionKey(String path) {
         return keyIfIn(path, study.questionsDir());
     }
 
-    public String notePath(String key) {
-        return study.notesDir() + "/" + key + ".md";
+    public String notePath(StudyKey key) {
+        return study.notesDir() + "/" + key.member() + "/" + key.date() + ".md";
     }
 
-    public String questionPath(String key) {
-        return study.questionsDir() + "/" + key + ".md";
+    public String questionPath(StudyKey key) {
+        return study.questionsDir() + "/" + key.member() + "/" + key.date() + ".md";
     }
 
-    public String reviewPath(String key) {
-        return study.reviewsDir() + "/" + key + ".md";
+    public String reviewPath(StudyKey key) {
+        return study.reviewsDir() + "/" + key.member() + "/" + key.date() + ".md";
     }
 
-    private static Optional<String> keyIfIn(String path, String dir) {
+    private static Optional<StudyKey> keyIfIn(String path, String dir) {
         Matcher m = MD.matcher(path);
-        if (m.matches() && m.group(1).equals(dir)) return Optional.of(m.group(2));
-        return Optional.empty();
+        if (!m.matches() || !m.group(1).equals(dir)) return Optional.empty();
+        return StudyKey.parse(m.group(2) + "/" + m.group(3));
     }
 }
