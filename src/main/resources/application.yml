@@ -1,18 +1,18 @@
 spring:
   application:
-    name: study-buddy
+    name: studymate
 
 server:
   port: 8080
 
-study-buddy:
+studymate:
   github:
     owner: ${GITHUB_OWNER}
     repo: ${GITHUB_REPO}
     branch: ${GITHUB_BRANCH:main}
     token: ${GITHUB_TOKEN}
     webhook-secret: ${GITHUB_WEBHOOK_SECRET:}
-    bot-name: study-buddy
+    bot-name: studymate
   claude:
     api-key: ${ANTHROPIC_API_KEY:}
     model: claude-opus-5
@@ -24,4 +24,4 @@ study-buddy:
 
 logging:
   level:
-    io.studybuddy: INFO
+    io.studymate: INFO

@@ -1,0 +1,4 @@
+package io.studymate.llm;
+
+public record AnsweredQuestion(int number, String type, String question, String answer) {
+}

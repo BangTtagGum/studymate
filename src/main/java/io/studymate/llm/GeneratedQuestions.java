@@ -1,0 +1,6 @@
+package io.studymate.llm;
+
+import java.util.List;
+
+public record GeneratedQuestions(List<GeneratedQuestion> questions) {
+}

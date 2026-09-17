@@ -1,4 +1,4 @@
-# study-buddy
+# studymate
 
 매일 공부한 내용을 GitHub 에 커밋하면, 봇이 **이해도 확인 질문**을 커밋으로 남기고
 답변을 커밋하면 **채점 + 보충 설명**을 다시 커밋해주는 학습 보조 서버.
@@ -19,7 +19,7 @@
 sequenceDiagram
     participant Me as 나
     participant GH as GitHub (study-log)
-    participant SB as study-buddy
+    participant SB as studymate
     participant CL as Claude
 
     Me->>GH: notes/2026-09-17.md 커밋
@@ -27,14 +27,14 @@ sequenceDiagram
     SB->>GH: 노트 읽기 (Contents API)
     SB->>CL: 질문 생성 요청
     CL-->>SB: 질문 JSON
-    SB->>GH: questions/2026-09-17.md 커밋 [study-buddy]
+    SB->>GH: questions/2026-09-17.md 커밋 [studymate]
 
     Me->>GH: 답변란 채워서 커밋
     GH->>SB: push 웹훅
     SB->>GH: 질문 파일 + 노트 읽기
     SB->>CL: 채점 요청
     CL-->>SB: 리뷰 JSON
-    SB->>GH: reviews/2026-09-17.md 커밋 [study-buddy]
+    SB->>GH: reviews/2026-09-17.md 커밋 [studymate]
 ```
 
 | 변경된 파일 | 조건 | 동작 |
@@ -43,7 +43,7 @@ sequenceDiagram
 | `questions/*.md` | 답변란이 하나 이상 채워짐 | 채점 → `reviews/` 커밋 |
 | 그 외 | — | 무시 |
 
-루프 방지: 봇 커밋은 `[study-buddy]` 접두어가 붙고, 핸들러는 그 커밋의 변경 파일을 무시한다.
+루프 방지: 봇 커밋은 `[studymate]` 접두어가 붙고, 핸들러는 그 커밋의 변경 파일을 무시한다.
 같은 답변을 두 번 채점하지 않도록 리뷰 파일 헤더에 답변 해시를 기록한다.
 
 ## 공부 저장소 구조
@@ -118,7 +118,7 @@ GitHub 저장소 → Settings → Webhooks → Add webhook
 
 ## 설정
 
-`application.yml` 의 `study-buddy.*` 항목. 환경변수로 덮어쓴다.
+`application.yml` 의 `studymate.*` 항목. 환경변수로 덮어쓴다.
 
 | 키 | 환경변수 | 기본값 | 설명 |
 |---|---|---|---|
@@ -134,13 +134,13 @@ GitHub 저장소 → Settings → Webhooks → Add webhook
 ## 프로젝트 구조
 
 ```
-src/main/java/io/studybuddy/
+src/main/java/io/studymate/
 ├── webhook/   GithubWebhookController, WebhookSignatureVerifier, PushEvent
 ├── study/     PushEventHandler(분기), QuestionService, ReviewService,
 │              QuestionDocument·ReviewDocument(마크다운 파싱/렌더), StudyPaths
 ├── github/    GithubClient (Contents API 읽기·쓰기)
 ├── llm/       StudyLlm 인터페이스, ClaudeStudyLlm, DummyStudyLlm, 입출력 record
-└── config/    StudyBuddyProperties, LlmConfig, CommitMarker
+└── config/    StudyMateProperties, LlmConfig, CommitMarker
 src/main/resources/prompts/   question.md, review.md (시스템 프롬프트)
 ```
 
