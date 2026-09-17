@@ -1,0 +1,15 @@
+build/
+.gradle/
+*.log
+.env
+application-local.yml
+.idea/
+*.iml
+.DS_Store
+
+# AI 태스크 플랜 및 세션 상태 (커밋하지 않음)
+TASK.md
+.claude-session-state.md
+.claude-compact-note.md
+.claude/tasks/
+codex_result/
